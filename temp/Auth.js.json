@@ -1,0 +1,1 @@
+{"data":{"_id":0,"properties":{},"primaryKeys":[],"filters":{},"hooks":{},"indexes":[],"uniques":[],"className":"Auth","abstract":true,"internal":true,"constructorParams":[],"toJsonParams":[],"useCache":true,"path":"./dist/auth/entities/auth.entity.js"},"origin":"./dist/auth/entities/auth.entity.js","hash":"e2c7bbdf8e43b3afef6e590232e66289","version":"6.4.6"}

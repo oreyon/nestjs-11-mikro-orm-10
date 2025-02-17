@@ -89,7 +89,7 @@ pnpm install --save-dev @types/cookie-parser @types/bcrypt @types/uuid @types/no
 
 npm install --save @mikro-orm/cli
 
-npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mysql
+npm install --save @mikro-orm/core @mikro-orm/nestjs @mikro-orm/mysql
 
 npm install --save @mikro-orm/cli @mikro-orm/entity-generator @mikro-orm/migrations @mikro-orm/reflection @mikro-orm/seeder @mikro-orm/sql-highlighter
 
@@ -127,12 +127,17 @@ pnpm add -D pluralize @types/pluralize
 ```ts
 import 'dotenv/config';
 import { defineConfig } from '@mikro-orm/mysql';
-import { Logger } from '@nestjs/common';
+import { Logger } from 'winston';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { SeedManager } from '@mikro-orm/seeder';
+
+const mikroOrmLogger: (message: string) => void = (message: string): void => {
+  const logger = new Logger();
+  logger.log.bind(message);
+};
 
 export default defineConfig({
   host: process.env.DB_HOST,
@@ -152,7 +157,8 @@ export default defineConfig({
   },
   debug: true,
   ensureDatabase: true,
-  logger: Logger.log.bind(new Logger('MikroORM')),
+  // logger: (message: string): void => Logger.log(message, 'MikroORM'),
+  logger: mikroOrmLogger,
   highlighter: new SqlHighlighter(),
   metadataProvider: TsMorphMetadataProvider,
   extensions: [Migrator, EntityGenerator, SeedManager],

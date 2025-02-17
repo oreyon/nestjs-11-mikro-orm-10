@@ -1,5 +1,7 @@
-import { Request } from 'express';
+import { User } from '../auth/entities/user.entity';
 
-interface UserRequest extends Request {
-  user?: string;
+declare module 'express' {
+  interface Request {
+    user?: User;
+  }
 }

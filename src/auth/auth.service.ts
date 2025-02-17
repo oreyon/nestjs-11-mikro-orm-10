@@ -1,26 +1,91 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { EntityManager } from '@mikro-orm/mysql';
+import { UserRepository } from './user.repository';
+import { RegisterRequest, RegisterResponse } from './dto/auth.dto';
+import { ValidationService } from '../common/validation/validation.service';
+import { ConfigService } from '@nestjs/config';
+import { AuthValidation } from './auth.validation';
+import { Role, User } from './entities/user.entity';
+import * as crypto from 'node:crypto';
+import * as argon2 from 'argon2';
+import { NodemailerService } from '../nodemailer/nodemailer.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+// import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly validationService: ValidationService,
+    private em: EntityManager,
+    private userRepository: UserRepository,
+    private configService: ConfigService,
+    private nodemailerService: NodemailerService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async register(request: RegisterRequest): Promise<RegisterResponse> {
+    this.logger.debug(`REGISTER USER: ${JSON.stringify(request)}`);
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    const registerRequest = this.validationService.validate(
+      AuthValidation.REGISTER,
+      request,
+    );
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const emailAlreadyExists = await this.userRepository.findOne({
+      email: registerRequest.email,
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    if (emailAlreadyExists)
+      throw new HttpException('Email already exists', 400);
+
+    const usernameAlreadyExists = await this.userRepository.count({
+      username: registerRequest.username,
+    });
+
+    if (usernameAlreadyExists > 0)
+      throw new HttpException('Username already exists', 400);
+
+    const isFirstAccount: boolean = (await this.userRepository.count()) === 0;
+    const role: Role = isFirstAccount ? Role.ADMIN : Role.USER;
+
+    const emailVerificationToken =
+      this.configService.get<string>('NODE_ENV') === 'development'
+        ? 'secret'
+        : crypto.randomBytes(40).toLocaleString('hex');
+
+    registerRequest.password = await argon2.hash(registerRequest.password);
+
+    const user: User = this.userRepository.create({
+      email: registerRequest.email,
+      username: registerRequest.username,
+      password: registerRequest.password,
+      role: role,
+      emailVerificationToken: emailVerificationToken,
+      isVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await this.em.persistAndFlush(user);
+
+    const frontEndOrigin = this.configService.get<string>(
+      'IP_FRONTEND_ORIGIN',
+    ) as string;
+
+    // Send email verification email
+    await this.nodemailerService.sendVerificationEmail({
+      name: user.username,
+      email: user.email,
+      verificationToken: emailVerificationToken,
+      origin: frontEndOrigin,
+    });
+
+    return {
+      email: user.email,
+      username: user.username,
+      emailVerificationToken: user.emailVerificationToken,
+    };
   }
 }
