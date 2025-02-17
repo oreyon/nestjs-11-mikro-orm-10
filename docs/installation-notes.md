@@ -44,7 +44,7 @@ npm install --save @nestjs/swagger
 
 npm install --save zod
 
-pnpm install winston
+pnpm install --save winston
 npm install nest-winston
 
 npm install --save bcrypt
