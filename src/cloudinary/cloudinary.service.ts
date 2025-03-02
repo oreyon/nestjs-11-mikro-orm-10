@@ -1,12 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cloudinary } from './cloudinary';
 import { UploadApiResponse } from 'cloudinary';
+import { User } from '../auth/entities/user.entity';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { ValidationService } from '../common/validation/validation.service';
+import { EntityManager } from '@mikro-orm/mysql';
+import { UserRepository } from '../auth/user.repository';
+import { CloudinaryValidation } from './cloudinary.validation';
 
 @Injectable()
 export class CloudinaryService {
-  constructor(private readonly cloudinary: Cloudinary) {}
+  constructor(
+    private readonly cloudinary: Cloudinary,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly validationService: ValidationService,
+    private em: EntityManager,
+    private userRepository: UserRepository,
+  ) {}
 
   async uploadSingle(file: Express.Multer.File): Promise<UploadApiResponse> {
+    this.validationService.validate(CloudinaryValidation.UPLOAD_IMAGE, {
+      image: file,
+    });
+
     const cloudinaryInstance = this.cloudinary.getInstance();
     const fileDataUrl: string = this.bufferFileToBase64(file);
 
@@ -18,17 +35,35 @@ export class CloudinaryService {
   async uploadMultiple(
     files: Express.Multer.File[],
   ): Promise<UploadApiResponse[]> {
-    const uploadPromises = files.map((file) => this.uploadSingle(file));
+    const uploadPromises: Promise<UploadApiResponse>[] = files.map((file) =>
+      this.uploadSingle(file),
+    );
     return Promise.all(uploadPromises);
   }
 
-  async remove(fileUrl: string): Promise<any> {
+  async remove(fileUrl: string): Promise<UploadApiResponse> {
     const cloudinaryInstance = this.cloudinary.getInstance();
-    const publicId = this.getPublicIdFromFileUrl(fileUrl);
+    const publicId: string = this.getPublicIdFromFileUrl(fileUrl);
 
     return (await cloudinaryInstance.uploader.destroy(
       publicId,
-    )) as Promise<any>;
+    )) as UploadApiResponse;
+  }
+
+  async uploadImage(user: User, file: Express.Multer.File) {
+    this.logger.debug(`FILE SIZE: ${file.size}`);
+    this.logger.debug(`FILE MIME TYPE: ${file.mimetype}`);
+
+    const fileDataUrl: string = this.bufferFileToBase64(file);
+    const cloudinaryInstance = this.cloudinary.getInstance();
+    const uploadResponse = await cloudinaryInstance.uploader.upload(
+      fileDataUrl,
+      {
+        resource_type: 'auto',
+      },
+    );
+
+    return uploadResponse.secure_url;
   }
 
   private bufferFileToBase64(file: Express.Multer.File): string {

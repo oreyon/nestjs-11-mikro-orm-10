@@ -47,8 +47,8 @@ npm install --save zod
 pnpm install --save winston
 npm install nest-winston
 
-npm install --save bcrypt
-npm install --save-dev @types/bcrypt
+npm install --save bcryptjs
+npm install --save-dev @types/bcryptjs
 
 npm install --save uuid
 npm install --save-dev @types/uuid

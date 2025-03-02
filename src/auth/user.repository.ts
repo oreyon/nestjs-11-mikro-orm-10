@@ -1,5 +1,6 @@
 import { User } from './entities/user.entity';
 import { EntityRepository } from '@mikro-orm/mysql';
+import { HttpException } from '@nestjs/common';
 
 export class UserRepository extends EntityRepository<User> {
   // // 1. Find a user by email
@@ -12,10 +13,16 @@ export class UserRepository extends EntityRepository<User> {
   //   return await this.findOne({ username });
   // }
   //
-  // // 3. Find a user by ID or throw an error if not found
-  // async findByIdOrFail(id: number): Promise<User> {
-  //   return await this.findOneOrFail({ id });
-  // }
+  // 3. Find a user by ID or throw an error if not found
+  async findByIdOrFail(id: number): Promise<User> {
+    return await this.findOneOrFail(
+      { id },
+      {
+        failHandler: (): HttpException =>
+          new HttpException(`User not found`, 404),
+      },
+    );
+  }
   //
   // // 4. Create and persist a new user
   // async createUser(data: Partial<User>): Promise<User> {
