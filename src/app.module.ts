@@ -9,6 +9,8 @@ import { MikroService } from './mikro/mikro.service';
 import { CommonModule } from './common/common.module';
 import { NodemailerModule } from './nodemailer/nodemailer.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ContactModule } from './contact/contact.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     AuthModule,
     NodemailerModule,
     CloudinaryModule,
+    ContactModule,
+    AddressModule,
   ],
   controllers: [],
   providers: [

@@ -105,7 +105,7 @@
     "testEnvironment": "node"
   },
   "mikro-orm": {
-    "useTsNode": false,
+    "useTsNode": true,
     "tsConfigPath": "./tsconfig.json",
     "configPaths": [
       "src/mikro-orm.config.ts",
@@ -118,6 +118,10 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@scarf/scarf",
+      "@swc/core",
+      "argon2",
       "bcrypt"
     ]
   }

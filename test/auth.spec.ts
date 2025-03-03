@@ -9,7 +9,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 const configService = new ConfigService();
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
-import * as jest from 'jest';
+// import * as jest from 'jest';
+
 import {
   CurrentUserResponse,
   EmailVerificationResponse,

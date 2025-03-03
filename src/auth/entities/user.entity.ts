@@ -5,15 +5,21 @@ import {
   Enum,
   Unique,
   EntityRepositoryType,
+  OneToMany,
+  Collection,
 } from '@mikro-orm/core';
 import { UserRepository } from '../user.repository';
+import { Contact } from '../../contact/entities/contact.entity';
 
 export enum Role {
   USER = 'USER',
   ADMIN = 'ADMIN',
 }
 
-@Entity({ tableName: 'users', repository: () => UserRepository })
+@Entity({
+  tableName: 'users',
+  repository: (): typeof UserRepository => UserRepository,
+})
 export class User {
   [EntityRepositoryType]?: UserRepository;
 
@@ -31,7 +37,7 @@ export class User {
   @Property({ length: 100 })
   password!: string;
 
-  @Enum({ items: () => Role, default: Role.USER })
+  @Enum({ items: (): typeof Role => Role, default: Role.USER })
   role: Role;
 
   @Property({ nullable: true })
@@ -73,4 +79,10 @@ export class User {
     nullable: true,
   })
   deletedAt?: Date;
+
+  @OneToMany(
+    (): typeof Contact => Contact,
+    (contact: Contact): User => contact.user,
+  )
+  contacts: Collection<Contact> = new Collection<Contact>(this);
 }

@@ -4,6 +4,7 @@ import { Role, User } from '../src/auth/entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import * as request from 'supertest';
 import { ForgotPasswordResponse } from '../src/auth/dto/auth.dto';
+import { Contact } from '../src/contact/entities/contact.entity';
 
 type WebResponse<T> = {
   message: string;
@@ -29,6 +30,7 @@ export class TestService {
   async deleteAllUser() {
     const em = this.em.fork();
     await em.nativeDelete(User, {});
+    await em.flush();
   }
 
   async createUser() {
@@ -69,6 +71,7 @@ export class TestService {
       accessToken: string;
       refreshToken: string;
     }>;
+
     const cookies = response.header['set-cookie'];
     expect(cookies).toBeDefined();
     console.log(cookies);
@@ -98,5 +101,11 @@ export class TestService {
   async getUserId(): Promise<User | null> {
     const em = this.em.fork(); // Fork EntityManager for isolated context
     return await em.findOne(User, { username: 'example' });
+  }
+
+  async deleteAllContact() {
+    const em = this.em.fork();
+    await em.nativeDelete(Contact, {});
+    await em.flush();
   }
 }
