@@ -9,6 +9,11 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 const configService = new ConfigService();
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
+import {
+  CreateContactResponse,
+  GetContactResponse,
+} from '../src/contact/dto/contact.dto';
+import { Contact } from '../src/contact/entities/contact.entity';
 // import * as jest from 'jest';
 
 describe('ContactController', () => {
@@ -87,33 +92,93 @@ describe('ContactController', () => {
       expect(body.errors).toBeDefined();
     });
 
-    // it('should be able to register a user', async () => {
-    //   const response = await request(app.getHttpServer())
-    //     .post('/api/v1/auth/register')
-    //     .send({
-    //       email: 'example@example.com',
-    //       password: 'example',
-    //       username: 'example',
-    //     });
-    //
-    //   logger.info(response.body);
-    //   expect(response.status).toBe(201);
-    // });
-    //
-    // it('should be rejected if username is already taken', async () => {
-    //   await testService.createUser();
-    //   const response = await request(app.getHttpServer())
-    //     .post('/api/v1/auth/register')
-    //     .send({
-    //       email: 'example@example.com',
-    //       password: 'example',
-    //       username: 'example',
-    //     });
-    //
-    //   const body = response.body as ErrorResponseBody;
-    //   logger.info(response.body);
-    //   expect(response.status).toBe(400);
-    //   expect(body.errors).toBeDefined();
-    // });
+    it('should be able to create a contact', async () => {
+      const tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/contacts')
+        .send({
+          firstName: 'example',
+          lastName: 'example',
+          email: 'example@example.com',
+          phone: '082134567890',
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<CreateContactResponse>;
+
+      logger.info(response.body);
+      expect(response.status).toBe(201);
+      expect(body.message).toBe('Success create contact');
+      expect(body.data.id).toBeDefined();
+      expect(body.data.firstName).toBe('example');
+      expect(body.data.lastName).toBe('example');
+      expect(body.data.email).toBe('example@example.com');
+      expect(body.data.phone).toBe('082134567890');
+    });
+  });
+
+  describe('GET /api/v1/contacts/:contactId', () => {
+    beforeEach(async () => {
+      await testService.deleteAllContact();
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+      await testService.createContact();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllContact();
+      await testService.deleteAllUser();
+    });
+
+    it('should be rejected if accessToken is invalid', async () => {
+      const contact: Contact | null = await testService.getContactId();
+
+      console.log(`Contact Id: ${contact?.id}`);
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact?.id}`)
+        .set('Cookie', [`accesstoken=wrongtoken`]);
+
+      const body = response.body as WebResponse<GetContactResponse>;
+      logger.info(response.body);
+      expect(response.status).toBe(401);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be rejected if contact is not found', async () => {
+      const tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+
+      console.log(`Contact Id: ${contact?.id}`);
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact!.id + 1}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<GetContactResponse>;
+      logger.info(response.body);
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to get a contact with correct id', async () => {
+      const tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+
+      console.log(`Contact Id: ${contact?.id}`);
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact?.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<GetContactResponse>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.message).toBe('Success get contact');
+      expect(body.data.id).toBeDefined();
+      expect(body.data.firstName).toBe('example');
+      expect(body.data.lastName).toBe('example');
+      expect(body.data.email).toBe('example@example.com');
+      expect(body.data.phone).toBe('082109876543');
+    });
   });
 });

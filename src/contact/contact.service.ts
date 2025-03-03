@@ -1,11 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ValidationService } from '../common/validation/validation.service';
 import { ContactRepository } from './contact.repository';
 import { EntityManager, MikroORM } from '@mikro-orm/mysql';
 import { User } from '../auth/entities/user.entity';
-import { CreateContactRequest, CreateContactResponse } from './dto/contact.dto';
+import {
+  CreateContactRequest,
+  CreateContactResponse,
+  GetContactResponse,
+} from './dto/contact.dto';
 import { ContactValidation } from './contact.validation';
 import { Contact } from './entities/contact.entity';
 
@@ -55,8 +59,26 @@ export class ContactService {
     return `This action returns all contact`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contact`;
+  async findOne(user: User, contactId: number): Promise<GetContactResponse> {
+    this.logger.debug(`GET ONE CONTACT: ${JSON.stringify(contactId)}`);
+
+    const contact: Contact | null = await this.contactRepository.findOne({
+      id: contactId,
+      user,
+    });
+
+    if (!contact) {
+      throw new HttpException(`Contact not found`, 404);
+    }
+
+    return {
+      id: contact.id,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      email: contact.email,
+      phone: contact.phone,
+      image: contact.image,
+    };
   }
 
   update(id: number) {

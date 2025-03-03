@@ -108,4 +108,30 @@ export class TestService {
     await em.nativeDelete(Contact, {});
     await em.flush();
   }
+
+  async createContact() {
+    const em = this.em.fork(); // Fork EntityManager for isolated context
+    const user: User | null = await this.getUserId();
+    if (user) {
+      const contact: Contact = em.create(Contact, {
+        firstName: 'example',
+        lastName: 'example',
+        email: 'example@example.com',
+        phone: '082109876543',
+        user: user,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await em.persistAndFlush(contact);
+    }
+  }
+
+  async getContactId(): Promise<Contact | null> {
+    const em = this.em.fork(); // Fork EntityManager for isolated context
+    const user: User | null = await this.getUserId();
+    if (user) {
+      return await em.findOne(Contact, { user: user.id });
+    }
+    return null;
+  }
 }

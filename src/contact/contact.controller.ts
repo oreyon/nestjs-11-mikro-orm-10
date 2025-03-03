@@ -1,6 +1,19 @@
-import { Controller, Post, Body, UseGuards, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Get,
+} from '@nestjs/common';
 import { ContactService } from './contact.service';
-import { CreateContactRequest, CreateContactResponse } from './dto/contact.dto';
+import {
+  CreateContactRequest,
+  CreateContactResponse,
+  GetContactResponse,
+} from './dto/contact.dto';
 import { AccessTokenGuard } from '../common/guards';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserData } from '../common/decorators';
@@ -27,7 +40,25 @@ export class ContactController {
     );
 
     return {
-      message: 'Success create a contact',
+      message: 'Success create contact',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Get contact by id' })
+  @HttpCode(200)
+  @Get(':contactId')
+  async findOne(
+    @UserData() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+  ): Promise<WebResponse<GetContactResponse>> {
+    const result: GetContactResponse = await this.contactService.findOne(
+      user,
+      contactId,
+    );
+
+    return {
+      message: 'Success get contact',
       data: result,
     };
   }
