@@ -1,26 +1,58 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAddressDto } from './dto/create-address.dto';
-import { UpdateAddressDto } from './dto/update-address.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { CreateAddressReq, CreateAddressRes } from './dto/address.dto';
+import { User } from '../auth/entities/user.entity';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { EntityManager } from '@mikro-orm/mysql';
+import { ValidationService } from '../common/validation/validation.service';
+import { ContactRepository } from '../contact/contact.repository';
+import { AddressRepository } from './address.repository';
+import { AddressValidation } from './address.validation';
+import { Contact } from '../contact/entities/contact.entity';
+import { Address } from './entities/address.entity';
 
 @Injectable()
 export class AddressService {
-  create(createAddressDto: CreateAddressDto) {
-    return 'This action adds a new address';
-  }
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly validationService: ValidationService,
+    private readonly contactRepository: ContactRepository,
+    private readonly addressRepository: AddressRepository,
+    private em: EntityManager,
+  ) {}
+  async create(
+    user: User,
+    request: CreateAddressReq,
+  ): Promise<CreateAddressRes> {
+    this.logger.debug(`CREATE ADDRESS: ${JSON.stringify(request)}`);
 
-  findAll() {
-    return `This action returns all address`;
-  }
+    const createRequest: CreateAddressReq = this.validationService.validate(
+      AddressValidation.CREATE,
+      request,
+    );
 
-  findOne(id: number) {
-    return `This action returns a #${id} address`;
-  }
+    const checkContact: Contact =
+      await this.contactRepository.checkContactExists(
+        user.id,
+        createRequest.contactId,
+      );
 
-  update(id: number, updateAddressDto: UpdateAddressDto) {
-    return `This action updates a #${id} address`;
-  }
+    const address: Address = this.addressRepository.create({
+      contact: checkContact,
+      ...createRequest,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} address`;
+    await this.em.persistAndFlush(address);
+
+    return {
+      id: address.id,
+      street: address.street,
+      city: address.city,
+      province: address.province,
+      country: address.country,
+      postalCode: address.postalCode,
+    };
   }
 }

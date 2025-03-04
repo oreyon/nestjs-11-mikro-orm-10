@@ -279,7 +279,7 @@ describe('ContactController', () => {
       expect(body.errors).toBeDefined();
     });
 
-    it('should be able t delete contac', async () => {
+    it('should be able to delete contact', async () => {
       const tokens: Tokens = await testService.login(app);
       const contact: Contact | null = await testService.getContactId();
 

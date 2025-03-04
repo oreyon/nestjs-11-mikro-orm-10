@@ -21,7 +21,6 @@ import {
 } from './dto/contact.dto';
 import { ContactValidation } from './contact.validation';
 import { Contact } from './entities/contact.entity';
-import { logger } from '@mikro-orm/nestjs';
 import { Paging } from '../model/web.model';
 
 @Injectable()
@@ -126,7 +125,7 @@ export class ContactService {
   }
 
   async remove(user: User, contactId: number): Promise<boolean> {
-    logger.debug(`DELETE CONTACT: ${JSON.stringify(contactId)}`);
+    this.logger.debug(`DELETE CONTACT: ${JSON.stringify(contactId)}`);
 
     const contact = await this.contactRepository.checkContactExists(
       user.id,

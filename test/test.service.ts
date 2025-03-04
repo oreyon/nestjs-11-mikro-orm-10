@@ -5,6 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import * as request from 'supertest';
 import { ForgotPasswordResponse } from '../src/auth/dto/auth.dto';
 import { Contact } from '../src/contact/entities/contact.entity';
+import { Address } from '../src/address/entities/address.entity';
 
 type WebResponse<T> = {
   message: string;
@@ -242,6 +243,55 @@ export class TestService {
         await em.persistAndFlush(contact);
       }
       console.log('15 contacts created');
+    }
+  }
+
+  async deleteAllAddress() {
+    const em = this.em.fork();
+    await em.nativeDelete(Address, {});
+    await em.flush();
+  }
+
+  async getAddressId() {
+    const em = this.em.fork(); // Fork EntityManager for isolated context
+    const contact: Contact | null = await this.getContactId();
+    if (contact) {
+      return await em.findOne(Address, { contact: contact.id });
+    }
+    return null;
+  }
+
+  async createManyAddress() {
+    const em = this.em.fork(); // Fork EntityManager for isolated context
+    const contact: Contact | null = await this.getContactId();
+    if (contact) {
+      const addresses = [
+        {
+          street: 'example street',
+          city: 'example city',
+          province: 'example province',
+          country: 'example country',
+          postalCode: '12345',
+          contact: contact,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          street: 'example street 2',
+          city: 'example city 2',
+          province: 'example province 2',
+          country: 'example country 2',
+          postalCode: '54321',
+          contact: contact,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      for (const addressData of addresses) {
+        const address: Address = em.create(Address, addressData);
+        await em.persistAndFlush(address);
+      }
     }
   }
 }

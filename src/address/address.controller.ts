@@ -1,34 +1,47 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  HttpCode,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AddressService } from './address.service';
-import { CreateAddressDto } from './dto/create-address.dto';
-import { UpdateAddressDto } from './dto/update-address.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccessTokenGuard } from '../common/guards';
+import { UserData } from '../common/decorators';
+import { User } from '../auth/entities/user.entity';
+import { CreateAddressReq, CreateAddressRes } from './dto/address.dto';
+import { WebResponse } from '../model/web.model';
 
-@Controller('address')
+@ApiTags('Address')
+@ApiBearerAuth()
+@UseGuards(AccessTokenGuard)
+@Controller('contacts/:contactId/addresses')
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
+  @ApiOperation({ summary: 'Create new address' })
+  @HttpCode(201)
   @Post()
-  create(@Body() createAddressDto: CreateAddressDto) {
-    return this.addressService.create(createAddressDto);
-  }
+  async create(
+    @UserData() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+    @Body() request: CreateAddressReq,
+  ): Promise<WebResponse<CreateAddressRes>> {
+    request.contactId = contactId;
+    const result: CreateAddressRes = await this.addressService.create(
+      user,
+      request,
+    );
 
-  @Get()
-  findAll() {
-    return this.addressService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.addressService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
-    return this.addressService.update(+id, updateAddressDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.addressService.remove(+id);
+    return {
+      message: 'Success create address',
+      data: result,
+    };
   }
 }
