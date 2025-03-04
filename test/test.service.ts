@@ -2,6 +2,7 @@ import { INestApplication, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/mysql';
 import { Role, User } from '../src/auth/entities/user.entity';
 import * as bcrypt from 'bcryptjs';
+import * as argon2 from 'argon2';
 import * as request from 'supertest';
 import { ForgotPasswordResponse } from '../src/auth/dto/auth.dto';
 import { Contact } from '../src/contact/entities/contact.entity';
@@ -85,18 +86,28 @@ export class TestService {
     };
   }
 
-  async forgotPassword(app: INestApplication) {
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/auth/forgot-password')
-      .send({
-        email: 'example@example.com',
-      });
+  // async forgotPassword(app: INestApplication) {
+  //   const response = await request(app.getHttpServer())
+  //     .post('/api/v1/auth/forgot-password')
+  //     .send({
+  //       email: 'example@example.com',
+  //     });
+  //
+  //   const body = response.body as WebResponse<ForgotPasswordResponse>;
+  //   return {
+  //     email: body.data.email,
+  //     passwordResetToken: body.data.passwordResetToken,
+  //   };
+  // }
 
-    const body = response.body as WebResponse<ForgotPasswordResponse>;
-    return {
-      email: body.data.email,
-      passwordResetToken: body.data.passwordResetToken,
-    };
+  async forgotPassword() {
+    const em = this.em.fork();
+    const user = await em.findOne(User, { username: 'example' });
+    if (user) {
+      user.passwordResetToken = await argon2.hash('secret');
+      user.passwordResetTokenExpirationTime = new Date(Date.now() + 30 * 1000);
+      await em.flush();
+    }
   }
 
   async getUserId(): Promise<User | null> {

@@ -377,14 +377,14 @@ export class AuthService {
     );
 
     if (!user || !user.passwordResetToken) {
-      throw new HttpException('Invalid user or reset token', 401);
+      throw new HttpException('Invalid user or reset token', 400);
     }
 
     if (
       !user.passwordResetTokenExpirationTime ||
       user.passwordResetTokenExpirationTime < new Date()
     ) {
-      throw new HttpException('Token has expired', 401);
+      throw new HttpException('Token has expired', 400);
     }
 
     const isTokenValid: boolean = await argon2.verify(
@@ -393,11 +393,12 @@ export class AuthService {
     );
 
     if (!isTokenValid) {
-      throw new HttpException('Invalid reset token', 401);
+      throw new HttpException('Invalid reset token', 400);
     }
 
     await this.em.transactional(async (em) => {
-      user.password = await bcrypt.hash(resetRequest.newPassword, 10);
+      // user.password = await bcrypt.hash(resetRequest.newPassword, 10);
+      user.password = await argon2.hash(resetRequest.newPassword);
       user.passwordResetToken = '';
       user.passwordResetTokenExpirationTime = undefined;
       await em.flush();

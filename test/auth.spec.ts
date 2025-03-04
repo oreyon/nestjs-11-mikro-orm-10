@@ -14,7 +14,10 @@ import * as request from 'supertest';
 import {
   CurrentUserResponse,
   EmailVerificationResponse,
+  ForgotPasswordResponse,
   LoginResponse,
+  RefreshTokenResponse,
+  ResetPasswordResponse,
 } from '../src/auth/dto/auth.dto';
 
 describe('AuthController', () => {
@@ -38,6 +41,13 @@ describe('AuthController', () => {
   type ErrorResponseBody = {
     errors: string | Array<{ validation: string; message: string }>;
   };
+
+  interface Tokens {
+    accessToken: string;
+    refreshToken: string;
+    signedAccessToken: string;
+    signedRefreshToken: string;
+  }
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -339,6 +349,148 @@ describe('AuthController', () => {
       logger.info(response.body);
       expect(response.status).toBe(204);
       expect(body.data).toBeUndefined();
+    });
+  });
+
+  describe('POST /api/v1/auth/refresh-token', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should be rejected if refresh token is invalid', async () => {
+      await testService.login(app);
+      const fakeToken: string = `refreshtoken=s%3AeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MjkzN2NkNi1iMjkzLTQxYWYtODBlYS01Yzk2MGIzOGVlYTQiLCJzdWIiOiIzMDgiLCJpYXQiOjE3NDEwNzU3OTEsImV4cCI6MTc0MTE2MjE5MZ0.yFa5ZoMyRlb-pWUpNB6J3KIAddBkF5dUU_4-nYKhCZI.qkSyWUYA5pk6Ou8%2BJVhYGhKpu0Pdec2I1DihqZJCK4g; Path=/; HttpOnly; SameSite=None`;
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/refresh-token')
+        .set('Cookie', [fakeToken]);
+
+      const body = response.body as ErrorResponseBody;
+      expect(response.status).toBe(401);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to refresh token', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/refresh-token')
+        .set('Cookie', [`${tokens.signedRefreshToken}`]);
+
+      const body = response.body as WebResponse<RefreshTokenResponse>;
+
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.accessToken).toBeDefined();
+      expect(body.data.refreshToken).toBeDefined();
+    });
+  });
+
+  describe('POST /api/v1/auth/forgot-password', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should be rejected if email is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/forgot-password')
+        .send({
+          email: 'wrongexample@example.com',
+        });
+
+      const body = response.body as ErrorResponseBody;
+
+      logger.info(response.body);
+      expect(response.status).toBe(400);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to send secret token for reset password', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/forgot-password')
+        .send({
+          email: 'example@example.com',
+        });
+
+      const body = response.body as WebResponse<ForgotPasswordResponse>;
+
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.email).toBe('example@example.com');
+      expect(body.data.passwordResetToken).toBeDefined();
+    });
+  });
+
+  describe('POST /api/v1/auth/reset-password', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+      await testService.forgotPassword();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should be rejected if input is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/reset-password')
+        .send({
+          email: '',
+          newPassword: '',
+          repeatNewPassword: '',
+          resetPasswordToken: '',
+        });
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(400);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be rejected if token is wrong', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/reset-password')
+        .send({
+          email: 'example@example.com',
+          newPassword: 'newexample',
+          repeatNewPassword: 'newexample',
+          resetPasswordToken: `wrongsecret`,
+        });
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(400);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to reset password', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/auth/reset-password')
+        .send({
+          email: 'example@example.com',
+          newPassword: 'example1',
+          repeatNewPassword: 'example1',
+          resetPasswordToken: 'secret',
+        });
+
+      const body = response.body as WebResponse<ResetPasswordResponse>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.email).toBe('example@example.com');
     });
   });
 });
