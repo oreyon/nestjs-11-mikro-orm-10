@@ -22,7 +22,6 @@ import {
 import { ContactValidation } from './contact.validation';
 import { Contact } from './entities/contact.entity';
 import { logger } from '@mikro-orm/nestjs';
-import { request } from 'express';
 import { Paging } from '../model/web.model';
 
 @Injectable()
@@ -65,10 +64,6 @@ export class ContactService {
       email: contact.email,
       phone: contact.phone,
     };
-  }
-
-  findAll() {
-    return `This action returns all contact`;
   }
 
   async findOne(user: User, contactId: number): Promise<GetContactResponse> {
