@@ -10,8 +10,29 @@ const configService = new ConfigService();
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 import { Contact } from '../src/contact/entities/contact.entity';
-import { CreateAddressRes } from '../src/address/dto/address.dto';
+import {
+  CreateAddressRes,
+  GetAddressRes,
+} from '../src/address/dto/address.dto';
 // import * as jest from 'jest';
+
+const startTest = async (testService: TestService) => {
+  await testService.deleteAllAddress();
+  await testService.deleteAllContact();
+  await testService.deleteAllUser();
+
+  await testService.createUser();
+  await testService.verifyEmail();
+  await testService.createContact();
+  await testService.createManyContacts();
+  await testService.createManyAddress();
+};
+
+const endTest = async (testService: TestService) => {
+  await testService.deleteAllAddress();
+  await testService.deleteAllContact();
+  await testService.deleteAllUser();
+};
 
 describe('AddressController', () => {
   let app: INestApplication;
@@ -129,6 +150,36 @@ describe('AddressController', () => {
       logger.info(response.body);
       expect(response.status).toBe(400);
       expect(body.errors).toBeDefined();
+    });
+  });
+
+  describe('GET /api/v1/contacts/:contactId/addresses', () => {
+    beforeEach(async () => {
+      await startTest(testService);
+    });
+
+    afterEach(async () => {
+      await endTest(testService);
+    });
+
+    it('should be able to get a;; addresses', async () => {
+      const contact: Contact | null = await testService.getContactId();
+      const tokens: Tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact!.id}/addresses`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<GetAddressRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(2);
+      expect(body.data[0].id).toBeDefined();
+      expect(body.data[0].street).toBe('example street');
+      expect(body.data[0].city).toBe('example city');
+      expect(body.data[0].province).toBe('example province');
+      expect(body.data[0].country).toBe('example country');
+      expect(body.data[0].postalCode).toBe('12345');
     });
   });
 });

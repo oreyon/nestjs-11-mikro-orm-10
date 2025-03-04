@@ -1,5 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CreateAddressReq, CreateAddressRes } from './dto/address.dto';
+import {
+  CreateAddressReq,
+  CreateAddressRes,
+  GetAddressRes,
+} from './dto/address.dto';
 import { User } from '../auth/entities/user.entity';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -54,5 +58,29 @@ export class AddressService {
       country: address.country,
       postalCode: address.postalCode,
     };
+  }
+
+  async findAll(user: User, contactId: number): Promise<GetAddressRes[]> {
+    this.logger.debug(`GET ALL ADDRESSES: ${contactId}`);
+
+    const contact: Contact = await this.contactRepository.checkContactExists(
+      user.id,
+      contactId,
+    );
+
+    const addresses: Address[] = await this.addressRepository.find({
+      contact: contact.id,
+    });
+
+    return addresses.map((address: Address) => {
+      return {
+        id: address.id,
+        street: address.street,
+        city: address.city,
+        province: address.province,
+        country: address.country,
+        postalCode: address.postalCode,
+      };
+    });
   }
 }

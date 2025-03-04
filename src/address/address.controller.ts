@@ -15,7 +15,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../common/guards';
 import { UserData } from '../common/decorators';
 import { User } from '../auth/entities/user.entity';
-import { CreateAddressReq, CreateAddressRes } from './dto/address.dto';
+import {
+  CreateAddressReq,
+  CreateAddressRes,
+  GetAddressRes,
+} from './dto/address.dto';
 import { WebResponse } from '../model/web.model';
 
 @ApiTags('Address')
@@ -41,6 +45,24 @@ export class AddressController {
 
     return {
       message: 'Success create address',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Get all addresses' })
+  @HttpCode(200)
+  @Get()
+  async findAll(
+    @UserData() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+  ): Promise<WebResponse<GetAddressRes[]>> {
+    const result: GetAddressRes[] = await this.addressService.findAll(
+      user,
+      contactId,
+    );
+
+    return {
+      message: 'Success get all addresses',
       data: result,
     };
   }

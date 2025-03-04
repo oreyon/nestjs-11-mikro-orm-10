@@ -86,20 +86,6 @@ export class TestService {
     };
   }
 
-  // async forgotPassword(app: INestApplication) {
-  //   const response = await request(app.getHttpServer())
-  //     .post('/api/v1/auth/forgot-password')
-  //     .send({
-  //       email: 'example@example.com',
-  //     });
-  //
-  //   const body = response.body as WebResponse<ForgotPasswordResponse>;
-  //   return {
-  //     email: body.data.email,
-  //     passwordResetToken: body.data.passwordResetToken,
-  //   };
-  // }
-
   async forgotPassword() {
     const em = this.em.fork();
     const user = await em.findOne(User, { username: 'example' });
