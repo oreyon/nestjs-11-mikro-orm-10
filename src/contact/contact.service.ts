@@ -9,9 +9,12 @@ import {
   CreateContactRequest,
   CreateContactResponse,
   GetContactResponse,
+  UpdateContactReq,
+  UpdateContactRes,
 } from './dto/contact.dto';
 import { ContactValidation } from './contact.validation';
 import { Contact } from './entities/contact.entity';
+import { logger } from '@mikro-orm/nestjs';
 
 @Injectable()
 export class ContactService {
@@ -81,11 +84,58 @@ export class ContactService {
     };
   }
 
-  update(id: number) {
-    return `This action updates a #${id} contact`;
+  async update(
+    user: User,
+    request: UpdateContactReq,
+  ): Promise<UpdateContactRes> {
+    this.logger.debug(`UPDATE CONTACT: ${JSON.stringify(request)}`);
+
+    const updateRequest: UpdateContactReq = this.validationService.validate(
+      ContactValidation.UPDATE,
+      request,
+    );
+
+    const contact: Contact = await this.contactRepository.checkContactExists(
+      user.id,
+      updateRequest.id,
+    );
+
+    if (contact.user.id !== user.id) {
+      throw new HttpException('Forbidden', 403);
+    }
+
+    contact.firstName = updateRequest.firstName as string;
+    contact.lastName = updateRequest.lastName;
+    contact.email = updateRequest.email;
+    contact.phone = updateRequest.phone;
+    contact.updatedAt = new Date();
+    await this.em.persistAndFlush(contact);
+
+    return {
+      id: contact.id,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      email: contact.email,
+      phone: contact.phone,
+      image: contact.image,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} contact`;
+  async remove(user: User, contactId: number): Promise<boolean> {
+    logger.debug(`DELETE CONTACT: ${JSON.stringify(contactId)}`);
+
+    const contact = await this.contactRepository.checkContactExists(
+      user.id,
+      contactId,
+    );
+
+    if (contact.user.id !== user.id) {
+      throw new HttpException('Forbidden', 403);
+    }
+
+    await this.contactRepository.nativeDelete({ id: contactId, user: user.id });
+    await this.em.flush();
+
+    return true;
   }
 }
