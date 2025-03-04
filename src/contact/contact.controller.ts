@@ -9,12 +9,15 @@ import {
   Get,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import {
   CreateContactRequest,
   CreateContactResponse,
   GetContactResponse,
+  SearchContactReq,
+  SearchContactRes,
   UpdateContactReq,
   UpdateContactRes,
 } from './dto/contact.dto';
@@ -46,6 +49,55 @@ export class ContactController {
     return {
       message: 'Success create contact',
       data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Create many contacts' })
+  @HttpCode(201)
+  @Post('bulk')
+  async createMany(
+    @UserData() user: User,
+    @Body() request: CreateContactRequest[],
+  ): Promise<WebResponse<CreateContactResponse[]>> {
+    const result: CreateContactResponse[] =
+      await this.contactService.createMany(user, request);
+
+    return {
+      message: 'Success create many contacts',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Get All contacts' })
+  @HttpCode(200)
+  @Get()
+  async searchContact(
+    @UserData() user: User,
+    @Query('username') username?: string,
+    @Query('email') email?: string,
+    @Query('phone') phone?: string,
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('size', new ParseIntPipe({ optional: true })) size?: number,
+    @Query('sortBy') sortBy?: string,
+    @Query('orderBy') orderBy?: string,
+  ): Promise<WebResponse<SearchContactRes[]>> {
+    const searchRequest: SearchContactReq = {
+      username: username,
+      email: email,
+      phone: phone,
+      page: page || 1,
+      size: size || 10,
+      sortBy: sortBy || 'id',
+      orderBy: orderBy || 'asc',
+    };
+
+    console.log(`QUERY DTO`, searchRequest);
+    const result = await this.contactService.searchContact(user, searchRequest);
+
+    return {
+      message: 'Search contact success',
+      data: result.data,
+      paging: result.paging,
     };
   }
 

@@ -12,6 +12,7 @@ import * as request from 'supertest';
 import {
   CreateContactResponse,
   GetContactResponse,
+  SearchContactRes,
   UpdateContactRes,
 } from '../src/contact/dto/contact.dto';
 import { Contact } from '../src/contact/entities/contact.entity';
@@ -290,6 +291,265 @@ describe('ContactController', () => {
       logger.info(response.body);
       expect(response.status).toBe(204);
       expect(body.data).toBeUndefined();
+    });
+  });
+
+  describe(`POST /api/v1/contacts/bulk`, () => {
+    beforeEach(async () => {
+      await testService.deleteAllContact();
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllContact();
+      await testService.deleteAllUser();
+    });
+
+    it('should be reject if request is invalid', async () => {
+      const tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/contacts/bulk')
+        .send([
+          {
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+          },
+          {
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+          },
+        ])
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(400);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to create many contacts', async () => {
+      const tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/contacts/bulk')
+        .send([
+          {
+            firstName: 'example',
+            lastName: 'example',
+            email: 'example@example.com',
+            phone: '082134567890',
+          },
+          {
+            firstName: 'Eko',
+            lastName: 'Kurniawan',
+            email: 'example@yopmail.com',
+            phone: '082109876543',
+          },
+        ])
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<CreateContactResponse[]>;
+
+      logger.info(response.body);
+      expect(response.status).toBe(201);
+      expect(body.message).toBe('Success create many contacts');
+      expect(body.data.length).toBe(2);
+      expect(body.data[0].id).toBeDefined();
+      expect(body.data[0].firstName).toBe('example');
+      expect(body.data[0].lastName).toBe('example');
+      expect(body.data[0].email).toBe('example@example.com');
+      expect(body.data[0].phone).toBe('082134567890');
+    });
+  });
+
+  describe('GET /api/v1/contacts', () => {
+    beforeEach(async () => {
+      await testService.deleteAllContact();
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+      await testService.createContact();
+      await testService.createManyContacts();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllContact();
+      await testService.deleteAllUser();
+    });
+
+    it('should be able to get all contacts', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(10);
+      expect(body.paging.size).toBe(10);
+      expect(body.paging.totalPage).toBe(2);
+      expect(body.paging.currentPage).toBe(1);
+    });
+
+    it('should be able to search contact by username', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          username: 'example',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(1);
+      expect(body.paging.size).toBe(10);
+      expect(body.paging.totalPage).toBe(1);
+      expect(body.paging.currentPage).toBe(1);
+    });
+
+    it('should be able to search contact by email', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          email: 'example@example.com',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(1);
+      expect(body.paging.size).toBe(10);
+      expect(body.paging.totalPage).toBe(1);
+      expect(body.paging.currentPage).toBe(1);
+    });
+
+    it('should be able to search contact by phone', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          phone: '081234567904',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(1);
+      expect(body.paging.size).toBe(10);
+      expect(body.paging.totalPage).toBe(1);
+      expect(body.paging.currentPage).toBe(1);
+    });
+
+    it('should be able to search contact by username, email, and phone', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          username: 'example',
+          email: 'example@example.com',
+          phone: '082109876543',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(1);
+      expect(body.paging.size).toBe(10);
+      expect(body.paging.totalPage).toBe(1);
+      expect(body.paging.currentPage).toBe(1);
+    });
+
+    it('should be able to search contact even if username not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          username: 'notfound',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(0);
+    });
+
+    it('should be able to search contact even if email not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          email: 'wrongemail@wrong.com',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(0);
+    });
+
+    it('should be able to search contact even if phone not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          phone: '969696',
+          page: 1,
+          size: 10,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(0);
+    });
+
+    it('should be able to search contact with page', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/contacts')
+        .query({
+          page: 2,
+          size: 1,
+        })
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<SearchContactRes[]>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(1);
+      expect(body.paging.size).toBe(1);
+      expect(body.paging.totalPage).toBe(16);
+      expect(body.paging.currentPage).toBe(2);
     });
   });
 });

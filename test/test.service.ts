@@ -134,4 +134,114 @@ export class TestService {
     }
     return null;
   }
+
+  async createManyContacts() {
+    const em = this.em.fork();
+    const user = await this.getUserId();
+    if (user) {
+      const contacts = [
+        {
+          firstName: 'Muhammad',
+          lastName: 'Faisal',
+          email: 'faisal@example.com',
+          phone: '082134567890',
+        },
+        {
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          phone: '081234567891',
+        },
+        {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          email: 'jane.smith@example.com',
+          phone: '081234567892',
+        },
+        {
+          firstName: 'Alice',
+          lastName: 'Johnson',
+          email: 'alice.johnson@example.com',
+          phone: '081234567893',
+        },
+        {
+          firstName: 'Bob',
+          lastName: 'Brown',
+          email: 'bob.brown@example.com',
+          phone: '081234567894',
+        },
+        {
+          firstName: 'Charlie',
+          lastName: 'Wilson',
+          email: 'charlie.wilson@example.com',
+          phone: '081234567895',
+        },
+        {
+          firstName: 'David',
+          lastName: 'Lee',
+          email: 'david.lee@example.com',
+          phone: '081234567896',
+        },
+        {
+          firstName: 'Eve',
+          lastName: 'Kim',
+          email: 'eve.kim@example.com',
+          phone: '081234567897',
+        },
+        {
+          firstName: 'Frank',
+          lastName: 'Garcia',
+          email: 'frank.garcia@example.com',
+          phone: '081234567898',
+        },
+        {
+          firstName: 'Grace',
+          lastName: 'Martinez',
+          email: 'grace.martinez@example.com',
+          phone: '081234567899',
+        },
+        {
+          firstName: 'Hank',
+          lastName: 'Lopez',
+          email: 'hank.lopez@example.com',
+          phone: '081234567900',
+        },
+        {
+          firstName: 'Ivy',
+          lastName: 'Gonzalez',
+          email: 'ivy.gonzalez@example.com',
+          phone: '081234567901',
+        },
+        {
+          firstName: 'Jake',
+          lastName: 'Perez',
+          email: 'jake.perez@example.com',
+          phone: '081234567902',
+        },
+        {
+          firstName: 'Karen',
+          lastName: 'Sanchez',
+          email: 'karen.sanchez@example.com',
+          phone: '081234567903',
+        },
+        {
+          firstName: 'Leo',
+          lastName: 'Clark',
+          email: 'leo.clark@example.com',
+          phone: '081234567904',
+        },
+      ];
+
+      for (const contactData of contacts) {
+        const contact: Contact = em.create(Contact, {
+          ...contactData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          user: user,
+        });
+        await em.persistAndFlush(contact);
+      }
+      console.log('15 contacts created');
+    }
+  }
 }
