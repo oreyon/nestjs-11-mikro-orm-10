@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   CreateAddressReq,
   CreateAddressRes,
+  GetAddressReq,
   GetAddressRes,
 } from './dto/address.dto';
 import { User } from '../auth/entities/user.entity';
@@ -82,5 +83,33 @@ export class AddressService {
         postalCode: address.postalCode,
       };
     });
+  }
+
+  async findOne(user: User, request: GetAddressReq): Promise<GetAddressRes> {
+    this.logger.debug(`GET ADDRESS BY ID: ${JSON.stringify(request)}`);
+
+    const getRequest: GetAddressReq = this.validationService.validate(
+      AddressValidation.GET,
+      request,
+    );
+
+    const contact: Contact = await this.contactRepository.checkContactExists(
+      user.id,
+      getRequest.contactId,
+    );
+
+    const address: Address = await this.addressRepository.checkAddressExist(
+      contact.id,
+      getRequest.addressId,
+    );
+
+    return {
+      id: address.id,
+      street: address.street,
+      city: address.city,
+      province: address.province,
+      country: address.country,
+      postalCode: address.postalCode,
+    };
   }
 }

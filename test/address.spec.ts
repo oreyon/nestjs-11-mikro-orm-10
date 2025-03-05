@@ -10,6 +10,7 @@ const configService = new ConfigService();
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 import { Contact } from '../src/contact/entities/contact.entity';
+import { Address } from '../src/address/entities/address.entity';
 import {
   CreateAddressRes,
   GetAddressRes,
@@ -180,6 +181,66 @@ describe('AddressController', () => {
       expect(body.data[0].province).toBe('example province');
       expect(body.data[0].country).toBe('example country');
       expect(body.data[0].postalCode).toBe('12345');
+    });
+  });
+
+  describe('GET /api/v1/contacts/:contactId/addresses/:addressId', () => {
+    beforeEach(async () => {
+      await startTest(testService);
+    });
+
+    afterEach(async () => {
+      await endTest(testService);
+    });
+
+    it('should be rejected if contact is not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact!.id + 69}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be rejected if address is not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact!.id}/addresses/${address!.id + 69}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to get address', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/contacts/${contact!.id}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<GetAddressRes>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.id).toBeDefined();
+      expect(body.data.street).toBe('example street');
+      expect(body.data.city).toBe('example city');
+      expect(body.data.province).toBe('example province');
+      expect(body.data.country).toBe('example country');
+      expect(body.data.postalCode).toBe('12345');
     });
   });
 });

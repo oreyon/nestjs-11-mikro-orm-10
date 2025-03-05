@@ -18,6 +18,7 @@ import { User } from '../auth/entities/user.entity';
 import {
   CreateAddressReq,
   CreateAddressRes,
+  GetAddressReq,
   GetAddressRes,
 } from './dto/address.dto';
 import { WebResponse } from '../model/web.model';
@@ -63,6 +64,29 @@ export class AddressController {
 
     return {
       message: 'Success get all addresses',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Find address by id' })
+  @HttpCode(200)
+  @Get(':addressId')
+  async findOne(
+    @UserData() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+    @Param('addressId', ParseIntPipe) addressId: number,
+  ): Promise<WebResponse<GetAddressRes>> {
+    const request: GetAddressReq = {
+      contactId: contactId,
+      addressId: addressId,
+    };
+
+    const result: GetAddressRes = await this.addressService.findOne(
+      user,
+      request,
+    );
+    return {
+      message: 'Success find address',
       data: result,
     };
   }
