@@ -20,8 +20,11 @@ import {
   CreateAddressRes,
   GetAddressReq,
   GetAddressRes,
+  UpdateAddressReq,
+  UpdateAddressRes,
 } from './dto/address.dto';
 import { WebResponse } from '../model/web.model';
+import { request } from 'express';
 
 @ApiTags('Address')
 @ApiBearerAuth()
@@ -87,6 +90,29 @@ export class AddressController {
     );
     return {
       message: 'Success find address',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Update address by id' })
+  @HttpCode(200)
+  @Patch(':addressId')
+  async update(
+    @UserData() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+    @Param('addressId', ParseIntPipe) addressId: number,
+    @Body() request: UpdateAddressReq,
+  ): Promise<WebResponse<UpdateAddressRes>> {
+    request.contactId = contactId;
+    request.id = addressId;
+
+    const result: UpdateAddressRes = await this.addressService.update(
+      user,
+      request,
+    );
+
+    return {
+      message: 'Success update address',
       data: result,
     };
   }

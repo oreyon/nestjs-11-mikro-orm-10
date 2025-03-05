@@ -14,6 +14,7 @@ import { Address } from '../src/address/entities/address.entity';
 import {
   CreateAddressRes,
   GetAddressRes,
+  UpdateAddressRes,
 } from '../src/address/dto/address.dto';
 // import * as jest from 'jest';
 
@@ -241,6 +242,109 @@ describe('AddressController', () => {
       expect(body.data.province).toBe('example province');
       expect(body.data.country).toBe('example country');
       expect(body.data.postalCode).toBe('12345');
+    });
+  });
+
+  describe('PATCH /api/v1/contacts/:contactId/addresses/:addressId', () => {
+    beforeEach(async () => {
+      await startTest(testService);
+    });
+
+    afterEach(async () => {
+      await endTest(testService);
+    });
+
+    it('should be rejected if request is invalid', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/v1/contacts/${contact!.id}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .send({
+          street: '',
+          city: '',
+          province: '',
+          country: '',
+          postalCode: '',
+        });
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(400);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be rejected if contact is not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/v1/contacts/${contact!.id + 69}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .send({
+          street: 'new example street',
+          city: 'new example city',
+          province: 'new example province',
+          country: 'new example country',
+          postalCode: '09876',
+        });
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be rejected if address is not found', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/v1/contacts/${contact!.id}/addresses/${address!.id + 69}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .send({
+          street: 'new example street',
+          city: 'new example city',
+          province: 'new example province',
+          country: 'new example country',
+          postalCode: '09876',
+        });
+
+      const body = response.body as ErrorResponseBody;
+      logger.info(response.body);
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to update address', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/v1/contacts/${contact!.id}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .send({
+          street: 'new example street',
+          city: 'new example city',
+          province: 'new example province',
+          country: 'new example country',
+          postalCode: '09876',
+        });
+
+      const body = response.body as WebResponse<UpdateAddressRes>;
+      logger.info(response.body);
+      expect(response.status).toBe(200);
+      expect(body.data.id).toBeDefined();
+      expect(body.data.street).toBe('new example street');
+      expect(body.data.city).toBe('new example city');
+      expect(body.data.province).toBe('new example province');
+      expect(body.data.country).toBe('new example country');
+      expect(body.data.postalCode).toBe('09876');
     });
   });
 });

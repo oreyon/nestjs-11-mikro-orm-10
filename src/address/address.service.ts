@@ -4,6 +4,8 @@ import {
   CreateAddressRes,
   GetAddressReq,
   GetAddressRes,
+  UpdateAddressReq,
+  UpdateAddressRes,
 } from './dto/address.dto';
 import { User } from '../auth/entities/user.entity';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -111,5 +113,35 @@ export class AddressService {
       country: address.country,
       postalCode: address.postalCode,
     };
+  }
+
+  async update(
+    user: User,
+    request: UpdateAddressReq,
+  ): Promise<UpdateAddressRes> {
+    this.logger.debug(`UPDATE ADDRESS: ${JSON.stringify(request)}`);
+
+    const updateRequest: UpdateAddressReq = this.validationService.validate(
+      AddressValidation.UPDATE,
+      request,
+    );
+
+    const contact: Contact = await this.contactRepository.checkContactExists(
+      user.id,
+      updateRequest.contactId,
+    );
+
+    const address: Address = await this.addressRepository.checkAddressExist(
+      contact.id,
+      updateRequest.id,
+    );
+
+    const data: UpdateAddressRes = {
+      ...address,
+      ...updateRequest,
+    };
+    await this.em.flush();
+
+    return data;
   }
 }
