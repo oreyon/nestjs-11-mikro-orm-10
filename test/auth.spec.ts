@@ -243,7 +243,7 @@ describe('AuthController', () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/auth/login')
         .send({
-          email: 'exmaple',
+          email: 'example@example.com',
           password: '',
         });
 

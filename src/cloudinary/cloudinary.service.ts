@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { Cloudinary } from './cloudinary';
 import { UploadApiResponse } from 'cloudinary';
 import { User } from '../auth/entities/user.entity';
@@ -44,6 +44,10 @@ export class CloudinaryService {
   async remove(fileUrl: string): Promise<UploadApiResponse> {
     const cloudinaryInstance = this.cloudinary.getInstance();
     const publicId: string = this.getPublicIdFromFileUrl(fileUrl);
+
+    if (!publicId) {
+      throw new HttpException('Invalid file url', 400);
+    }
 
     return (await cloudinaryInstance.uploader.destroy(
       publicId,
