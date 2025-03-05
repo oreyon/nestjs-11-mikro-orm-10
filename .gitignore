@@ -51,7 +51,7 @@ temp/*
 .tmp
 
 # upload folder
-/uploads/*
+/uploads
 
 # Runtime data
 pids
