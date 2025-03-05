@@ -50,6 +50,9 @@ temp/*
 .temp
 .tmp
 
+# upload folder
+/uploads/*
+
 # Runtime data
 pids
 *.pid
