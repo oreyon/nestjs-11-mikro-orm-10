@@ -4,6 +4,7 @@ import {
   CreateAddressRes,
   GetAddressReq,
   GetAddressRes,
+  RemoveAddressReq,
   UpdateAddressReq,
   UpdateAddressRes,
 } from './dto/address.dto';
@@ -143,5 +144,31 @@ export class AddressService {
     await this.em.flush();
 
     return data;
+  }
+
+  async remove(user: User, request: RemoveAddressReq): Promise<boolean> {
+    this.logger.debug(`DELETE ADDRESS: ${JSON.stringify(request)}`);
+
+    const removeRequest: RemoveAddressReq = this.validationService.validate(
+      AddressValidation.REMOVE,
+      request,
+    );
+
+    const contact: Contact = await this.contactRepository.checkContactExists(
+      user.id,
+      removeRequest.contactId,
+    );
+
+    const address: Address = await this.addressRepository.checkAddressExist(
+      contact.id,
+      removeRequest.addressId,
+    );
+
+    await this.addressRepository.nativeDelete({
+      id: address.id,
+      contact: contact.id,
+    });
+
+    return true;
   }
 }

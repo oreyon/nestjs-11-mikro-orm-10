@@ -16,6 +16,7 @@ import {
   GetAddressRes,
   UpdateAddressRes,
 } from '../src/address/dto/address.dto';
+import { set } from 'zod';
 // import * as jest from 'jest';
 
 const startTest = async (testService: TestService) => {
@@ -345,6 +346,58 @@ describe('AddressController', () => {
       expect(body.data.province).toBe('new example province');
       expect(body.data.country).toBe('new example country');
       expect(body.data.postalCode).toBe('09876');
+    });
+  });
+
+  describe('DELETE /api/v1/contacts/:contactId/addresses/:addressId', () => {
+    beforeEach(async () => {
+      await startTest(testService);
+    });
+
+    afterEach(async () => {
+      await endTest(testService);
+    });
+
+    it('should be rejected if contact is not exists', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/v1/contacts/${contact!.id + 69}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as ErrorResponseBody;
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be rejected if address is not exists', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/v1/contacts/${contact!.id}/addresses/${address!.id + 69}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as ErrorResponseBody;
+      expect(response.status).toBe(404);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should be able to delete address', async () => {
+      const tokens: Tokens = await testService.login(app);
+      const contact: Contact | null = await testService.getContactId();
+      const address: Address | null = await testService.getAddressId();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/v1/contacts/${contact!.id}/addresses/${address!.id}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const body = response.body as WebResponse<boolean>;
+      expect(response.status).toBe(204);
+      expect(body.data).toBeUndefined();
     });
   });
 });

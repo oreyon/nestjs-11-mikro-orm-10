@@ -20,11 +20,11 @@ import {
   CreateAddressRes,
   GetAddressReq,
   GetAddressRes,
+  RemoveAddressReq,
   UpdateAddressReq,
   UpdateAddressRes,
 } from './dto/address.dto';
 import { WebResponse } from '../model/web.model';
-import { request } from 'express';
 
 @ApiTags('Address')
 @ApiBearerAuth()
@@ -113,6 +113,27 @@ export class AddressController {
 
     return {
       message: 'Success update address',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Remove address by id' })
+  @HttpCode(204)
+  @Delete(':addressId')
+  async remove(
+    @UserData() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+    @Param('addressId', ParseIntPipe) addressId: number,
+  ): Promise<WebResponse<boolean>> {
+    const request: RemoveAddressReq = {
+      contactId: contactId,
+      addressId: addressId,
+    };
+
+    const result: boolean = await this.addressService.remove(user, request);
+
+    return {
+      message: 'Success remove address',
       data: result,
     };
   }
