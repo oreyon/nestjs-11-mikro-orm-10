@@ -14,7 +14,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { AccessTokenGuard } from '../common/guards';
 import { UploadApiResponse } from 'cloudinary';
@@ -38,10 +44,24 @@ export class CloudinaryController {
   @UseGuards(AccessTokenGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @HttpCode(200)
-  @Put('upload')
   @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Image file to upload',
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Put('upload')
   async uploadImage(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile()
+    file: Express.Multer.File,
   ): Promise<WebResponse<UploadApiResponse>> {
     const result: UploadApiResponse =
       await this.cloudinaryService.uploadSingle(file);
@@ -59,6 +79,22 @@ export class CloudinaryController {
   @HttpCode(200)
   @Put('upload-multiple')
   @UseInterceptors(FilesInterceptor('images', 2))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Array of image files to upload',
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
   async uploadMultiple(
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<WebResponse<UploadApiResponse[]>> {
@@ -95,6 +131,19 @@ export class CloudinaryController {
   @UseGuards(AccessTokenGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @HttpCode(200)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Single image file to upload',
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @Put('upload-local')
   @FileUpload()
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -121,6 +170,22 @@ export class CloudinaryController {
   @UseGuards(AccessTokenGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @HttpCode(200)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Array of image files to upload',
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
   @Put('upload-multiple-local')
   @FileUpload(true)
   // eslint-disable-next-line @typescript-eslint/require-await
