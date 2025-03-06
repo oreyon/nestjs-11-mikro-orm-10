@@ -164,7 +164,8 @@ export class CloudinaryController {
       await fs.unlink(filePath); // Attempt to delete the file
       return res.status(204).send(); // Success, return 204 No Content
     } catch (error) {
-      if (error.code === 'ENOENT') {
+      // if (error.code === 'ENOENT') {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         // File not found
         throw new HttpException('File not found', 404);
       }

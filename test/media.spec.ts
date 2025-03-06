@@ -232,4 +232,154 @@ describe('MediaController', () => {
       expect(deleteBody.data.result).toBe('ok');
     });
   });
+
+  describe('PUT /api/v1/media/upload-local', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should reject upload if image field name is invalid', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .put('/api/v1/media/upload-local')
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .attach('file', 'test/assets/asset-img-test-2.jpg'); // Wrong field name
+
+      const body = response.body as ErrorResponseBody;
+      expect(response.status).toBe(400);
+      expect(body.errors).toBeDefined();
+    });
+
+    it('should upload an image successfully', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .put('/api/v1/media/upload-local')
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .attach('image', 'test/assets/asset-img-test-2.jpg');
+
+      const body = response.body as WebResponse<UploadApiResponse>;
+      expect(response.status).toBe(200);
+      expect(body.data.imageUrl).toBeDefined();
+    });
+  });
+
+  describe('PUT /api/v1/media/upload-multiple-local', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should upload multiple images successfully', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const response = await request(app.getHttpServer())
+        .put('/api/v1/media/upload-multiple-local')
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .attach('images', 'test/assets/asset-img-test-2.jpg')
+        .attach('images', 'test/assets/asset-img-test-3.jpg');
+
+      const body = response.body as WebResponse<UploadApiResponse[]>;
+      expect(response.status).toBe(200);
+      expect(body.data.length).toBe(2);
+      expect(body.data[0].imageUrl).toBeDefined();
+      expect(body.data[1].imageUrl).toBeDefined();
+    });
+  });
+
+  describe('GET /api/v1/media/:imageName', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should retrieve an uploaded image', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const uploadResponse = await request(app.getHttpServer())
+        .put('/api/v1/media/upload-local')
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .attach('image', 'test/assets/asset-img-test-2.jpg');
+
+      const uploadBody = uploadResponse.body as WebResponse<UploadApiResponse>;
+      expect(uploadResponse.status).toBe(200);
+      expect(uploadBody.data.imageUrl).toBeDefined();
+
+      const imageName = uploadBody.data.imageName as string;
+
+      const response = await request(app.getHttpServer()).get(
+        `/api/v1/media/${imageName}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.header['content-type']).toContain('image');
+    });
+  });
+
+  describe('DELETE /api/v1/media/:imageName', () => {
+    beforeEach(async () => {
+      await testService.deleteAllUser();
+      await testService.createUser();
+      await testService.verifyEmail();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAllUser();
+    });
+
+    it('should delete an uploaded image', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const uploadResponse = await request(app.getHttpServer())
+        .put('/api/v1/media/upload-local')
+        .set('Cookie', [`${tokens.signedAccessToken}`])
+        .attach('image', 'test/assets/asset-img-test-2.jpg');
+
+      const uploadBody = uploadResponse.body as WebResponse<UploadApiResponse>;
+      expect(uploadResponse.status).toBe(200);
+      expect(uploadBody.data.imageUrl).toBeDefined();
+
+      const imageName = uploadBody.data.imageName as string;
+
+      const deleteResponse = await request(app.getHttpServer())
+        .delete(`/api/v1/media/${imageName}`)
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      expect(deleteResponse.status).toBe(204);
+
+      const getResponse = await request(app.getHttpServer()).get(
+        `/api/v1/media/${imageName}`,
+      );
+      expect(getResponse.status).toBe(404);
+    });
+
+    it('should return 404 when deleting a non-existing image', async () => {
+      const tokens: Tokens = await testService.login(app);
+
+      const deleteResponse = await request(app.getHttpServer())
+        .delete('/api/v1/media/nonexistent.jpg')
+        .set('Cookie', [`${tokens.signedAccessToken}`]);
+
+      const deleteBody = deleteResponse.body as ErrorResponseBody;
+      expect(deleteResponse.status).toBe(404);
+      expect(deleteBody.errors).toBe('File not found');
+    });
+  });
 });
