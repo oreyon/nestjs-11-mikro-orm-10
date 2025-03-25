@@ -18,6 +18,20 @@ import { Address } from '../../address/entities/address.entity';
 export class Contact {
   [EntityRepositoryType]?: ContactRepository;
 
+  constructor(
+    firstName: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+    image?: string,
+  ) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.image = image;
+  }
+
   @PrimaryKey()
   id!: number;
 

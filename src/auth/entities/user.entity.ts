@@ -23,6 +23,13 @@ export enum Role {
 export class User {
   [EntityRepositoryType]?: UserRepository;
 
+  constructor(email: string, username: string, password: string, role: Role) {
+    this.email = email;
+    this.username = username;
+    this.password = password;
+    this.role = role;
+  }
+
   @PrimaryKey()
   id!: number;
 
@@ -39,6 +46,8 @@ export class User {
 
   @Enum({ items: (): typeof Role => Role, default: Role.USER })
   role: Role;
+  // use this if you want to set the default role to USER instead of constructor
+  // role: Role = Role.USER;
 
   @Property({ nullable: true })
   image?: string;
@@ -65,14 +74,14 @@ export class User {
     onCreate: () => new Date(),
     columnType: 'datetime',
   })
-  createdAt: Date;
+  createdAt: Date = new Date();
 
   @Property({
     onCreate: () => new Date(),
     onUpdate: () => new Date(),
     columnType: 'datetime',
   })
-  updatedAt: Date;
+  updatedAt: Date = new Date();
 
   @Property({
     columnType: 'datetime',

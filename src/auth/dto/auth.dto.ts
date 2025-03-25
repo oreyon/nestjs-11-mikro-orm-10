@@ -2,6 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../entities/user.entity';
 
 export class RegisterRequest {
+  constructor(email: string, password: string, username: string) {
+    this.email = email;
+    this.password = password;
+    this.username = username;
+  }
+
   @ApiProperty({
     description: 'Email address of the user',
     format: 'email',
@@ -31,12 +37,22 @@ export class RegisterRequest {
 }
 
 export class RegisterResponse {
+  constructor(email: string, username: string) {
+    this.email = email;
+    this.username = username;
+  }
+
   email: string;
   username: string;
   emailVerificationToken?: string;
 }
 
 export class EmailVerificationRequest {
+  constructor(email: string, emailVerificationToken: string) {
+    this.email = email;
+    this.emailVerificationToken = emailVerificationToken;
+  }
+
   @ApiProperty({
     description: 'Email address of the user',
     format: 'email',
@@ -57,6 +73,18 @@ export class EmailVerificationRequest {
 }
 
 export class EmailVerificationResponse {
+  constructor(
+    email: string,
+    role: Role,
+    isVerified: boolean,
+    verifiedTime: Date,
+  ) {
+    this.email = email;
+    this.role = role;
+    this.isVerified = isVerified;
+    this.verifiedTime = verifiedTime;
+  }
+
   email: string;
   role?: Role;
   isVerified?: boolean;
@@ -64,6 +92,11 @@ export class EmailVerificationResponse {
 }
 
 export class LoginRequest {
+  constructor(email: string, password: string) {
+    this.email = email;
+    this.password = password;
+  }
+
   @ApiProperty({
     description: 'Email address of the user',
     format: 'email',
@@ -84,6 +117,18 @@ export class LoginRequest {
 }
 
 export class LoginResponse {
+  constructor(
+    email: string,
+    username: string,
+    accessToken: string,
+    refreshToken: string,
+  ) {
+    this.email = email;
+    this.username = username;
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+  }
+
   email: string;
   username: string;
   accessToken?: string;
@@ -91,6 +136,13 @@ export class LoginResponse {
 }
 
 export class CurrentUserResponse {
+  constructor(email: string, username: string, role: Role, image?: string) {
+    this.email = email;
+    this.username = username;
+    this.role = role;
+    this.image = image;
+  }
+
   email: string;
   username: string;
   role: Role;
@@ -98,6 +150,10 @@ export class CurrentUserResponse {
 }
 
 export class RefreshTokenRequest {
+  constructor(refreshToken: string) {
+    this.refreshToken = refreshToken;
+  }
+
   @ApiProperty({
     description: 'Refresh token of the user',
     format: 'text',
@@ -109,11 +165,20 @@ export class RefreshTokenRequest {
 }
 
 export class RefreshTokenResponse {
+  constructor(accessToken: string, refreshToken: string) {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+  }
+
   accessToken: string;
   refreshToken: string;
 }
 
 export class ForgotPasswordRequest {
+  constructor(email: string) {
+    this.email = email;
+  }
+
   @ApiProperty({
     description: 'Email address of the user',
     format: 'email',
@@ -125,11 +190,28 @@ export class ForgotPasswordRequest {
 }
 
 export class ForgotPasswordResponse {
+  constructor(email: string, passwordResetToken: string) {
+    this.email = email;
+    this.passwordResetToken = passwordResetToken;
+  }
+
   email: string;
   passwordResetToken: string;
 }
 
 export class ResetPasswordRequest {
+  constructor(
+    email: string,
+    newPassword: string,
+    repeatNewPassword: string,
+    resetPasswordToken: string,
+  ) {
+    this.email = email;
+    this.newPassword = newPassword;
+    this.repeatNewPassword = repeatNewPassword;
+    this.resetPasswordToken = resetPasswordToken;
+  }
+
   @ApiProperty({
     description: 'Email address of the user',
     format: 'email',
@@ -168,6 +250,11 @@ export class ResetPasswordRequest {
 }
 
 export class ResetPasswordResponse {
+  constructor(email: string, username: string) {
+    this.email = email;
+    this.username = username;
+  }
+
   email: string;
   username: string;
 }

@@ -1,6 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateContactRequest {
+  constructor(
+    firstName: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+  ) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+  }
+
   @ApiProperty({
     description: 'First name of the contact',
     format: 'text',
@@ -31,6 +43,22 @@ export class CreateContactRequest {
 }
 
 export class CreateContactResponse {
+  constructor(
+    id: number,
+    firstName: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+    image?: string,
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.image = image;
+  }
+
   id: number;
   firstName: string;
   lastName?: string;
@@ -40,6 +68,22 @@ export class CreateContactResponse {
 }
 
 export class GetContactResponse {
+  constructor(
+    id: number,
+    firstName: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+    image?: string,
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.image = image;
+  }
+
   id: number;
   firstName: string;
   lastName?: string;
@@ -49,6 +93,20 @@ export class GetContactResponse {
 }
 
 export class UpdateContactReq {
+  constructor(
+    id: number,
+    firstName?: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+  }
+
   @ApiProperty({
     description: 'Contact ID',
     format: 'number',
@@ -86,6 +144,22 @@ export class UpdateContactReq {
 }
 
 export class UpdateContactRes {
+  constructor(
+    id: number,
+    firstName?: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+    image?: string,
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.image = image;
+  }
+
   id: number;
   firstName?: string;
   lastName?: string;
@@ -95,6 +169,24 @@ export class UpdateContactRes {
 }
 
 export class SearchContactReq {
+  constructor(
+    username?: string,
+    email?: string,
+    phone?: string,
+    page?: number,
+    size?: number,
+    sortBy?: string,
+    orderBy?: string,
+  ) {
+    this.username = username;
+    this.email = email;
+    this.phone = phone;
+    this.page = page;
+    this.size = size;
+    this.sortBy = sortBy;
+    this.orderBy = orderBy;
+  }
+
   @ApiPropertyOptional({
     description: 'Username to filter contacts',
     format: 'text',
@@ -146,6 +238,22 @@ export class SearchContactReq {
 }
 
 export class SearchContactRes {
+  constructor(
+    id: number,
+    firstName: string,
+    lastName?: string,
+    email?: string,
+    phone?: string,
+    image?: string,
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.image = image;
+  }
+
   id: number;
   firstName: string;
   lastName?: string;

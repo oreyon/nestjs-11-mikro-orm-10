@@ -15,6 +15,20 @@ import { Contact } from '../../contact/entities/contact.entity';
 export class Address {
   [EntityRepositoryType]?: AddressRepository;
 
+  constructor(
+    country: string,
+    street?: string,
+    city?: string,
+    province?: string,
+    postalCode?: string,
+  ) {
+    this.country = country;
+    this.street = street;
+    this.city = city;
+    this.province = province;
+    this.postalCode = postalCode;
+  }
+
   @PrimaryKey()
   id!: number;
 
@@ -40,14 +54,14 @@ export class Address {
     onCreate: (): Date => new Date(),
     columnType: 'datetime',
   })
-  createdAt: Date;
+  createdAt: Date = new Date();
 
   @Property({
     onCreate: (): Date => new Date(),
     onUpdate: (): Date => new Date(),
     columnType: 'datetime',
   })
-  updatedAt: Date;
+  updatedAt: Date = new Date();
 
   @Property({
     columnType: 'datetime',
