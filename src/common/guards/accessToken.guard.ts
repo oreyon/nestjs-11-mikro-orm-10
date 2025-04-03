@@ -39,7 +39,7 @@ export class AccessTokenGuard implements CanActivate {
       request.user = user as User;
       return true;
     } catch (error) {
-      console.error(`JWT Verification Failed: ${error}`);
+      console.error(`JWT Verification Failed: ${JSON.stringify(error)}`);
       throw new HttpException('Unauthorized', 401);
     }
   }

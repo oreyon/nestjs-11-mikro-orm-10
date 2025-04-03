@@ -39,7 +39,9 @@ export class RefreshTokenGuard implements CanActivate {
       request.user = user as User;
       return true;
     } catch (error) {
-      console.error(`Refresh token verification failed: ${error}`);
+      console.error(
+        `Refresh token verification failed: ${JSON.stringify(error)}`,
+      );
       throw new HttpException('Unauthorized', 401);
     }
   }
