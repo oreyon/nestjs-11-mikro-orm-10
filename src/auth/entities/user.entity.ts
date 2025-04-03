@@ -23,12 +23,12 @@ export enum Role {
 export class User {
   [EntityRepositoryType]?: UserRepository;
 
-  constructor(email: string, username: string, password: string, role: Role) {
-    this.email = email;
-    this.username = username;
-    this.password = password;
-    this.role = role;
-  }
+  // constructor(email: string, username: string, password: string, role: Role) {
+  //   this.email = email;
+  //   this.username = username;
+  //   this.password = password;
+  //   this.role = role;
+  // }
 
   @PrimaryKey()
   id!: number;
@@ -45,7 +45,7 @@ export class User {
   password!: string;
 
   @Enum({ items: (): typeof Role => Role, default: Role.USER })
-  role: Role;
+  role: Role = Role.USER;
   // use this if you want to set the default role to USER instead of constructor
   // role: Role = Role.USER;
 

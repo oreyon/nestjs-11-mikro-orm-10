@@ -397,8 +397,8 @@ export class AuthService {
     }
 
     await this.em.transactional(async (em) => {
-      // user.password = await bcrypt.hash(resetRequest.newPassword, 10);
-      user.password = await argon2.hash(resetRequest.newPassword);
+      user.password = await bcrypt.hash(resetRequest.newPassword, 10);
+      // user.password = await argon2.hash(resetRequest.newPassword);
       user.passwordResetToken = '';
       user.passwordResetTokenExpirationTime = undefined;
       await em.flush();
