@@ -15,20 +15,6 @@ import { Contact } from '../../contact/entities/contact.entity';
 export class Address {
   [EntityRepositoryType]?: AddressRepository;
 
-  constructor(
-    country: string,
-    street?: string,
-    city?: string,
-    province?: string,
-    postalCode?: string,
-  ) {
-    this.country = country;
-    this.street = street;
-    this.city = city;
-    this.province = province;
-    this.postalCode = postalCode;
-  }
-
   @PrimaryKey()
   id!: number;
 

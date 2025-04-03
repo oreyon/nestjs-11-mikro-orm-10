@@ -138,8 +138,12 @@ export class AddressService {
     );
 
     const data: UpdateAddressRes = {
-      ...address,
-      ...updateRequest,
+      id: address.id,
+      street: updateRequest.street,
+      city: updateRequest.city,
+      province: updateRequest.province,
+      country: updateRequest.country,
+      postalCode: updateRequest.postalCode,
     };
     await this.em.flush();
 
