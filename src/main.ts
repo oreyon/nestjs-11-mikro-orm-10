@@ -33,21 +33,21 @@ async function bootstrap() {
     'utf-8',
   );
 
-  const customJs1 = fs.readFileSync(
-    path.resolve(
-      __dirname,
-      '../node_modules/swagger-ui-dist/swagger-ui-bundle.js',
-    ),
-    'utf-8',
-  );
-
-  const customJs2 = fs.readFileSync(
-    path.resolve(
-      __dirname,
-      '../node_modules/swagger-ui-dist/swagger-ui-standalone-preset.js',
-    ),
-    'utf-8',
-  );
+  // const customJs1 = fs.readFileSync(
+  //   path.resolve(
+  //     __dirname,
+  //     '../node_modules/swagger-ui-dist/swagger-ui-bundle.js',
+  //   ),
+  //   'utf-8',
+  // );
+  //
+  // const customJs2 = fs.readFileSync(
+  //   path.resolve(
+  //     __dirname,
+  //     '../node_modules/swagger-ui-dist/swagger-ui-standalone-preset.js',
+  //   ),
+  //   'utf-8',
+  // );
 
   const configSwagger = new DocumentBuilder()
     .setTitle('Contacts Apps API')
@@ -59,7 +59,10 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api/v1/docs', app, generateSwaggerDocument, {
     customCss: customCss,
-    customJs: [customJs1, customJs2],
+    customJs: [
+      'https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js',
+      'https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-standalone-preset.js',
+    ],
   });
 
   await app.listen(process.env.PORT ?? 3000);
