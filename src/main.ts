@@ -49,14 +49,6 @@ async function bootstrap() {
     'utf-8',
   );
 
-  const customJs3 = fs.readFileSync(
-    path.resolve(
-      __dirname,
-      '../node_modules/swagger-ui-dist/swagger-ui-init.js',
-    ),
-    'utf-8',
-  );
-
   const configSwagger = new DocumentBuilder()
     .setTitle('Contacts Apps API')
     .setDescription('Contacts Apps API Documentation')
@@ -67,7 +59,7 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api/v1/docs', app, generateSwaggerDocument, {
     customCss: customCss,
-    customJs: [customJs1, customJs2, customJs3],
+    customJs: [customJs1, customJs2],
   });
 
   await app.listen(process.env.PORT ?? 3000);
