@@ -3,8 +3,8 @@ import { AuthModule } from './auth/auth.module';
 import { MikroModule } from './mikro/mikro.module';
 import { ConfigModule } from '@nestjs/config';
 // import { ThrottlerModule } from '@nestjs/throttler';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+// import { ServeStaticModule } from '@nestjs/serve-static';
+// import { join } from 'path';
 import { MikroService } from './mikro/mikro.service';
 import { CommonModule } from './common/common.module';
 import { NodemailerModule } from './nodemailer/nodemailer.module';
@@ -24,10 +24,10 @@ import { AddressModule } from './address/address.module';
     //     limit: 60, // limit each IP to 60 requests per ttl
     //   },
     // ]),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    // ServeStaticModule.forRoot({
+    //   rootPath: join(__dirname, '..', 'uploads'),
+    //   serveRoot: '/uploads',
+    // }),
     MikroModule,
     CommonModule,
     AuthModule,

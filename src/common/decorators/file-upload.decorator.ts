@@ -1,3 +1,4 @@
+/*
 import { HttpException, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -67,3 +68,4 @@ export const FileUpload = (
     UseInterceptors(interceptor)(target, key, descriptor);
   };
 };
+*/

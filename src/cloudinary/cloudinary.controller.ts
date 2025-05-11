@@ -2,12 +2,12 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  // Get,
   HttpCode,
-  HttpException,
-  Param,
+  // HttpException,
+  // Param,
   Put,
-  Res,
+  // Res,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -27,12 +27,13 @@ import { UploadApiResponse } from 'cloudinary';
 import { WebResponse } from '../model/web.model';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role, User } from '../auth/entities/user.entity';
+import { Role } from '../auth/entities/user.entity';
+// import { User } from '../auth/entities/user.entity';
 import { RemoveMediaRequest } from './dto/media.dto';
-import { FileUpload, UserData } from '../common/decorators';
-import { Response } from 'express';
-import { join } from 'path';
-import { promises as fs } from 'fs';
+// import { FileUpload, UserData } from '../common/decorators';
+// import { Response } from 'express';
+// import { join } from 'path';
+// import { promises as fs } from 'fs';
 
 @ApiTags('Media')
 @Controller('media')
@@ -125,7 +126,7 @@ export class CloudinaryController {
       data: result,
     };
   }
-
+  /*
   @ApiOperation({ summary: 'Upload image to local server' })
   @ApiBearerAuth()
   @UseGuards(AccessTokenGuard, RolesGuard)
@@ -238,4 +239,5 @@ export class CloudinaryController {
       throw new HttpException('File deletion failed', 500);
     }
   }
+    */
 }
