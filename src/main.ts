@@ -5,6 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -26,6 +28,35 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.enableShutdownHooks();
 
+  const customCss = fs.readFileSync(
+    path.resolve(__dirname, '../node_modules/swagger-ui-dist/swagger-ui.css'),
+    'utf-8',
+  );
+
+  const customJs1 = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      '../node_modules/swagger-ui-dist/swagger-ui-bundle.js',
+    ),
+    'utf-8',
+  );
+
+  const customJs2 = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      '../node_modules/swagger-ui-dist/swagger-ui-standalone-preset.js',
+    ),
+    'utf-8',
+  );
+
+  const customJs3 = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      '../node_modules/swagger-ui-dist/swagger-ui-init.js',
+    ),
+    'utf-8',
+  );
+
   const configSwagger = new DocumentBuilder()
     .setTitle('Contacts Apps API')
     .setDescription('Contacts Apps API Documentation')
@@ -34,7 +65,10 @@ async function bootstrap() {
     .build();
   const generateSwaggerDocument = () =>
     SwaggerModule.createDocument(app, configSwagger);
-  SwaggerModule.setup('api/v1/docs', app, generateSwaggerDocument);
+  SwaggerModule.setup('api/v1/docs', app, generateSwaggerDocument, {
+    customCss: customCss,
+    customJs: [customJs1, customJs2, customJs3],
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
