@@ -243,8 +243,23 @@ export class AuthService {
     userLogin.refreshToken = '';
     await this.em.flush();
 
-    response.clearCookie('accesstoken');
-    response.clearCookie('refreshtoken');
+    response.cookie('accesstoken', '', {
+      expires: new Date(0),
+      maxAge: 0,
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'none',
+      signed: true,
+    });
+
+    response.cookie('refreshtoken', '', {
+      expires: new Date(0),
+      maxAge: 0,
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'none',
+      signed: true,
+    });
 
     return true;
   }
