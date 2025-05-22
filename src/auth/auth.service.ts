@@ -264,6 +264,27 @@ export class AuthService {
     return true;
   }
 
+  async clearCookies(response: Response): Promise<boolean> {
+    this.logger.debug(`CLEAR COOKIES`);
+
+    await Promise.all([
+      response.clearCookie('accesstoken', {
+        httpOnly: true,
+        secure: this.configService.get('NODE_ENV') === 'production',
+        sameSite: 'none',
+        signed: true,
+      }),
+      response.clearCookie('refreshtoken', {
+        httpOnly: true,
+        secure: this.configService.get('NODE_ENV') === 'production',
+        sameSite: 'none',
+        signed: true,
+      }),
+    ]);
+
+    return true; // Or simply return void if no specific data is needed
+  }
+
   async refreshToken(
     refreshToken: string,
     response: Response,

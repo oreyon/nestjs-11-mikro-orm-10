@@ -98,15 +98,16 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Logout user' })
-  @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
+  // @ApiBearerAuth()
+  // @UseGuards(AccessTokenGuard)
   @HttpCode(204)
   @Delete('logout')
   async logout(
-    @UserData() user: User,
+    // @UserData() user: User,
     @Res({ passthrough: true }) response: Response,
   ): Promise<WebResponse<boolean>> {
-    await this.authService.logout(user, response);
+    // await this.authService.logout(user, response);
+    await this.authService.clearCookies(response);
     return {
       message: 'Logout success',
       data: true,
