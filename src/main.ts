@@ -22,7 +22,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [`${process.env.IP_FRONTEND_ORIGIN}`],
     methods: ['GET', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Retry-Attempt'],
     credentials: true,
   });
   app.set('trust proxy', 1);
