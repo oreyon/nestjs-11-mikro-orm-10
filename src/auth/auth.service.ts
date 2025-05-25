@@ -259,10 +259,6 @@ export class AuthService {
 
     const currentUser: User = await this.checkUserExists(user.id);
 
-    if (updateRequest.username === currentUser.username) {
-      throw new HttpException('please use different username', 400);
-    }
-
     currentUser.username = updateRequest.username as string;
     currentUser.image = updateRequest.image as string;
     currentUser.updatedAt = new Date();
