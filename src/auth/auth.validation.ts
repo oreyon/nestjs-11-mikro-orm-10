@@ -5,6 +5,7 @@ import {
   LoginRequest,
   RegisterRequest,
   ResetPasswordRequest,
+  UpdateCurrentUserRequest,
 } from './dto/auth.dto';
 
 export class AuthValidation {
@@ -24,6 +25,12 @@ export class AuthValidation {
     email: z.string().email().min(6).max(100),
     password: z.string().min(6).max(100),
   });
+
+  static readonly UPDATE_CURRENT_USER: ZodType<UpdateCurrentUserRequest> =
+    z.object({
+      username: z.string().min(6).max(100).optional(),
+      image: z.string().max(100).optional(),
+    });
 
   static readonly REFRESH_TOKEN: ZodString = z.string().min(6).max(255);
 

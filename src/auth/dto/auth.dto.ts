@@ -97,6 +97,32 @@ export class CurrentUserResponse {
   image?: string;
 }
 
+export class UpdateCurrentUserRequest {
+  @ApiProperty({
+    description: 'Username of the user',
+    format: 'text',
+    minimum: 6,
+    maximum: 100,
+    example: 'example',
+    required: false,
+  })
+  username?: string;
+
+  @ApiProperty({
+    description: 'Image of the user',
+    format: 'text',
+    maximum: 100,
+    example: 'example.jpg',
+    required: false,
+  })
+  image?: string;
+}
+
+export class UpdateCurrentUserResponse {
+  username!: string;
+  image!: string;
+}
+
 export class RefreshTokenRequest {
   @ApiProperty({
     description: 'Refresh token of the user',

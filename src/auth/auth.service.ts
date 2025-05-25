@@ -16,6 +16,8 @@ import {
   RegisterResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  UpdateCurrentUserRequest,
+  UpdateCurrentUserResponse,
 } from './dto/auth.dto';
 import { ValidationService } from '../common/validation/validation.service';
 import { ConfigService } from '@nestjs/config';
@@ -229,6 +231,46 @@ export class AuthService {
       username: profile.username,
       role: profile.role,
       image: profile.image,
+    };
+  }
+
+  async checkUserExists(userId: number): Promise<User> {
+    this.logger.debug(`CHECK USER EXISTS: ${userId}`);
+
+    const user: User | null = await this.userRepository.findOne(userId);
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+
+    return user;
+  }
+
+  async updateCurrentUser(
+    user: User,
+    request: UpdateCurrentUserRequest,
+  ): Promise<UpdateCurrentUserResponse> {
+    this.logger.debug(`UPDATE CURRENT USER: ${JSON.stringify(request)}`);
+
+    const updateRequest: UpdateCurrentUserRequest =
+      this.validationService.validate(
+        AuthValidation.UPDATE_CURRENT_USER,
+        request,
+      );
+
+    const currentUser: User = await this.checkUserExists(user.id);
+
+    if (updateRequest.username === currentUser.username) {
+      throw new HttpException('please use different username', 400);
+    }
+
+    currentUser.username = updateRequest.username as string;
+    currentUser.image = updateRequest.image as string;
+    currentUser.updatedAt = new Date();
+    await this.em.flush();
+
+    return {
+      username: currentUser.username,
+      image: currentUser.image,
     };
   }
 

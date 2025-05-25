@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpException,
+  Patch,
   Post,
   Req,
   Res,
@@ -24,6 +25,8 @@ import {
   RegisterResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  UpdateCurrentUserRequest,
+  UpdateCurrentUserResponse,
 } from './dto/auth.dto';
 import { WebResponse } from '../model/web.model';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -93,6 +96,24 @@ export class AuthController {
 
     return {
       message: 'Success getting current user',
+      data: result,
+    };
+  }
+
+  @ApiOperation({ summary: 'Update current user' })
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
+  @HttpCode(200)
+  @Patch('current')
+  async updateCurrentUser(
+    @UserData() user: User,
+    @Body() request: UpdateCurrentUserRequest,
+  ): Promise<WebResponse<UpdateCurrentUserResponse>> {
+    const result: UpdateCurrentUserResponse =
+      await this.authService.updateCurrentUser(user, request);
+
+    return {
+      message: 'Success update current user',
       data: result,
     };
   }
