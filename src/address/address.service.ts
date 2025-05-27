@@ -145,7 +145,10 @@ export class AddressService {
       country: updateRequest.country,
       postalCode: updateRequest.postalCode,
     };
-    await this.em.flush();
+
+    this.addressRepository.assign(address, data);
+    address.updatedAt = new Date();
+    await this.em.persistAndFlush(address);
 
     return data;
   }
