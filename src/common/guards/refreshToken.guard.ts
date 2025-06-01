@@ -17,7 +17,7 @@ export class RefreshTokenGuard implements CanActivate {
     private readonly em: EntityManager,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request: Request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request) as string;
 
@@ -28,6 +28,13 @@ export class RefreshTokenGuard implements CanActivate {
     try {
       const payload: string | JwtPayload =
         this.jwtService.verifyRefreshToken(token);
+
+      /**
+       * @description
+       * will commented this for now, will try to optimize the guard
+       * by not query to the database
+       * so the payload just store the user id
+       * 
       const user: User | null = await this.em.findOne(User, {
         id: payload.sub as number | undefined,
       });
@@ -35,14 +42,15 @@ export class RefreshTokenGuard implements CanActivate {
       if (!user) {
         new HttpException('Unauthorized', 401);
       }
+      */
 
-      request.user = user as User;
+      request.user = { id: Number(payload.sub) } as User;
       return true;
-    } catch (error) {
-      console.error(
-        `Refresh token verification failed: ${JSON.stringify(error)}`,
-      );
-      throw new HttpException('Unauthorized', 401);
+    } catch {
+      // console.error(
+      //   `Refresh token verification failed: ${JSON.stringify(error)}`,
+      // );
+      throw new HttpException('jwt refresh token expired', 401);
     }
   }
 
