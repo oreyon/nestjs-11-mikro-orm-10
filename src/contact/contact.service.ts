@@ -44,6 +44,10 @@ export class ContactService {
       request,
     );
 
+    const userContact: User | null = await this.em.findOneOrFail(User, {
+      id: user.id,
+    });
+
     const contact: Contact = this.contactRepository.create({
       firstName: createRequest.firstName,
       lastName: createRequest.lastName,
@@ -51,7 +55,7 @@ export class ContactService {
       phone: createRequest.phone,
       createdAt: new Date(),
       updatedAt: new Date(),
-      user: user,
+      user: userContact,
     });
 
     await this.em.persistAndFlush(contact);
@@ -153,13 +157,17 @@ export class ContactService {
         this.validationService.validate(ContactValidation.CREATE, request),
     );
 
+    const userContact: User | null = await this.em.findOneOrFail(User, {
+      id: user.id,
+    });
+
     const contacts: Contact[] = createRequests.map(
       (request: CreateContactRequest): Contact =>
         this.contactRepository.create({
           ...request,
           updatedAt: new Date(),
           createdAt: new Date(),
-          user,
+          user: userContact,
         }),
     );
 
