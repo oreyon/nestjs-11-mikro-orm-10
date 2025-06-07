@@ -7,9 +7,10 @@ import { AppModule } from '../src/app.module';
 import { TestModule } from './test.module';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 const configService = new ConfigService();
-import * as cookieParser from 'cookie-parser';
-import * as request from 'supertest';
+import cookieParser from 'cookie-parser';
+import request from 'supertest';
 // import * as jest from 'jest';
+import { Server } from 'https';
 
 import {
   CurrentUserResponse,
@@ -21,7 +22,7 @@ import {
 } from '../src/auth/dto/auth.dto';
 
 describe('AuthController', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let logger: Logger;
   let testService: TestService;
 
@@ -326,16 +327,17 @@ describe('AuthController', () => {
       await testService.deleteAllUser();
     });
 
-    it('should be rejected if access token is invalid', async () => {
-      const response = await request(app.getHttpServer())
-        .delete('/api/v1/auth/logout')
-        .set('Cookie', [`accesstoken=wrongtoken`]);
+    // this commented because logout is public endpoint, and will return 204 to just set expired cookie to frontend application
+    // it('should be rejected if access token is invalid', async () => {
+    //   const response = await request(app.getHttpServer())
+    //     .delete('/api/v1/auth/logout')
+    //     .set('Cookie', [`accesstoken=wrongtoken`]);
 
-      const body = response.body as ErrorResponseBody;
-      logger.info(response.body);
-      expect(response.status).toBe(401);
-      expect(body.errors).toBeDefined();
-    });
+    //   const body = response.body as ErrorResponseBody;
+    //   logger.info(response.body);
+    //   expect(response.status).toBe(401);
+    //   expect(body.errors).toBeDefined();
+    // });
 
     it('should be able to logout', async () => {
       const tokens = await testService.login(app);

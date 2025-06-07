@@ -3,10 +3,11 @@ import { EntityManager } from '@mikro-orm/mysql';
 import { Role, User } from '../src/auth/entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
-import * as request from 'supertest';
-import { ForgotPasswordResponse } from '../src/auth/dto/auth.dto';
+import request from 'supertest';
+// import { ForgotPasswordResponse } from '../src/auth/dto/auth.dto';
 import { Contact } from '../src/contact/entities/contact.entity';
 import { Address } from '../src/address/entities/address.entity';
+import { Server } from 'https';
 
 type WebResponse<T> = {
   message: string;
@@ -21,9 +22,10 @@ type Paging = {
   currentPage: number;
 };
 
-type ErrorResponseBody = {
-  errors: string | Array<{ validation: string; message: string }>;
-};
+// never used, but can be uncommented if needed
+// type ErrorResponseBody = {
+//   errors: string | Array<{ validation: string; message: string }>;
+// };
 
 @Injectable()
 export class TestService {
@@ -61,7 +63,7 @@ export class TestService {
     }
   }
 
-  async login(app: INestApplication) {
+  async login(app: INestApplication<Server>) {
     const response = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({
