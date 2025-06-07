@@ -7,8 +7,8 @@ import { AppModule } from '../src/app.module';
 import { TestModule } from './test.module';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 const configService = new ConfigService();
-import * as cookieParser from 'cookie-parser';
-import * as request from 'supertest';
+import cookieParser from 'cookie-parser';
+import request from 'supertest';
 import { Contact } from '../src/contact/entities/contact.entity';
 import { Address } from '../src/address/entities/address.entity';
 import {
@@ -17,6 +17,7 @@ import {
   UpdateAddressRes,
 } from '../src/address/dto/address.dto';
 // import * as jest from 'jest';
+import { Server } from 'https';
 
 const startTest = async (testService: TestService) => {
   await testService.deleteAllAddress();
@@ -37,7 +38,7 @@ const endTest = async (testService: TestService) => {
 };
 
 describe('AddressController', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let logger: Logger;
   let testService: TestService;
 
