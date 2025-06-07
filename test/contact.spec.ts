@@ -7,8 +7,8 @@ import { AppModule } from '../src/app.module';
 import { TestModule } from './test.module';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 const configService = new ConfigService();
-import * as cookieParser from 'cookie-parser';
-import * as request from 'supertest';
+import cookieParser from 'cookie-parser';
+import request from 'supertest';
 import {
   CreateContactResponse,
   GetContactResponse,
@@ -17,9 +17,10 @@ import {
 } from '../src/contact/dto/contact.dto';
 import { Contact } from '../src/contact/entities/contact.entity';
 // import * as jest from 'jest';
+import { Server } from 'https';
 
 describe('ContactController', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let logger: Logger;
   let testService: TestService;
 
