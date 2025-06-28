@@ -11,6 +11,7 @@ import { NodemailerModule } from './nodemailer/nodemailer.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ContactModule } from './contact/contact.module';
 import { AddressModule } from './address/address.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AddressModule } from './address/address.module';
     CloudinaryModule,
     ContactModule,
     AddressModule,
+    CategoryModule,
   ],
   controllers: [],
   providers: [
