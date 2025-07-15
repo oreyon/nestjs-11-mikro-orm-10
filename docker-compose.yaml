@@ -1,0 +1,32 @@
+services:
+  nestjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '$PORT:$PORT'
+    env_file:
+      - .env
+    depends_on:
+      - dev-db
+    networks:
+      - dev-network
+
+  dev-db:
+    image: mysql:8.0
+    ports:
+      - '$DB_PORT:$DB_PORT'
+    environment:
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-dev-data:/var/lib/mysql
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge
+volumes:
+  db-dev-data:
+    name: db-dev-data
