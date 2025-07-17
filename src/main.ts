@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import fs from 'fs';
 import path from 'path';
+import { originRestrictionMiddleware } from './common/middlewares/origin-filter.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -18,6 +19,7 @@ async function bootstrap() {
       `${process.env.JWT_REFRESH_TOKEN_SECRET}`,
     ]),
   );
+  app.use(originRestrictionMiddleware);
   app.useLogger(logger);
   app.enableCors({
     origin: [`${process.env.IP_FRONTEND_ORIGIN}`],
@@ -57,7 +59,7 @@ async function bootstrap() {
     .build();
   const generateSwaggerDocument = () =>
     SwaggerModule.createDocument(app, configSwagger);
-  SwaggerModule.setup('api/v1/docs', app, generateSwaggerDocument, {
+  SwaggerModule.setup('/api/v1/docs', app, generateSwaggerDocument, {
     customCss: customCss,
     customJs: [
       'https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js',
